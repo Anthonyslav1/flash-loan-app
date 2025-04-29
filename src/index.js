@@ -8,7 +8,7 @@ import { WagmiProvider }                    from 'wagmi';               // Wagmi
 import { RainbowKitProvider }               from '@rainbow-me/rainbowkit';
 
 import { wagmiConfig } from './config';
-import '@rainbow-me/rainbowkit/styles.css';
+// import '@rainbow-me/rainbowkit/styles.css';
 
 // 2. Create React 18 root
 const container = document.getElementById('root');
