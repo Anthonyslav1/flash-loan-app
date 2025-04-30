@@ -1,63 +1,154 @@
 import { ethers } from "ethers";
 
 // Replace with your deployed contract address
-export const FLASH_LOAN_ADDRESS = "0xdDf86D8A1383E95F67A577f346e18EA6e8e9917E";
+export const FLASH_LOAN_ADDRESS = "0x482a51c070E0015DAA7DE443B2E2014F61a29842";
 
 // Contract ABI
 export const FLASH_LOAN_ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "_token", type: "address" },
-      { internalType: "uint256", name: "_amount", type: "uint256" },
-      { internalType: "address", name: "_tokenB", type: "address" },
-      { internalType: "address", name: "_poolBuy", type: "address" },
-      { internalType: "address", name: "_poolSell", type: "address" },
-    ],
-    name: "Execute_Arbitrage_Opportunity",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "asset", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "uint256", name: "premium", type: "uint256" },
-      { internalType: "address", name: "initiator", type: "address" },
-      { internalType: "bytes", name: "params", type: "bytes" },
-    ],
-    name: "executeOperation",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_addressProvider", type: "address" }],
-    stateMutability: "payable",
-    type: "constructor",
-  },
-  { stateMutability: "payable", type: "receive" },
-  {
-    inputs: [],
-    name: "ADDRESSES_PROVIDER",
-    outputs: [{ internalType: "contract IPoolAddressesProvider", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "owner",
-    outputs: [{ internalType: "address payable", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "POOL",
-    outputs: [{ internalType: "contract IPool", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "tokenB",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "poolBuy",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "poolSell",
+				"type": "address"
+			}
+		],
+		"name": "executeArbitrageOpportunity",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "asset",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "premium",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "initiator",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes",
+				"name": "params",
+				"type": "bytes"
+			}
+		],
+		"name": "executeOperation",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "preApproveToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addressProvider",
+				"type": "address"
+			}
+		],
+		"stateMutability": "payable",
+		"type": "constructor"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	},
+	{
+		"inputs": [],
+		"name": "ADDRESSES_PROVIDER",
+		"outputs": [
+			{
+				"internalType": "contract IPoolAddressesProvider",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address payable",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "POOL",
+		"outputs": [
+			{
+				"internalType": "contract IPool",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
 ];
 
 // Supported assets from previous backend code
