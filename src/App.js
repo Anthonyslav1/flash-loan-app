@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useAccount, useWriteContract } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { bsc } from "wagmi/chains";
 import { FLASH_LOAN_ADDRESS, FLASH_LOAN_ABI, SUPPORTED_ASSETS, toWei } from "./constants";
 import "./App.css";
 import { ethers } from "ethers";
-import '@rainbow-me/rainbowkit/styles.css'
+import "@rainbow-me/rainbowkit/styles.css";
 
 function App() {
-  const { address, isConnected } = useAccount();
-  const { chain } = useAccount();
+  const { address, isConnected, chain } = useAccount();
 
   // State variables
   const [tokenSymbol, setTokenSymbol] = useState(SUPPORTED_ASSETS[0].symbol);
@@ -26,18 +25,11 @@ function App() {
   const token = SUPPORTED_ASSETS.find((asset) => asset.symbol === tokenSymbol); // Borrowing Token
   const tokenB = SUPPORTED_ASSETS.find((asset) => asset.symbol === tokenBSymbol); // Target Token
 
-  // Wagmi hook for contract interaction
-  const { writeContractAsync, isLoading, isSuccess } = useWriteContract({
-    address: FLASH_LOAN_ADDRESS,
-    abi: FLASH_LOAN_ABI,
-    functionName: "Execute_Arbitrage_Opportunity",
-    args: [
-      token ? token.address : ethers.ZeroAddress,
-      amount && token ? toWei(amount, token.decimals) : 0,
-      tokenB ? tokenB.address : ethers.ZeroAddress,
-      poolBuy,
-      poolSell,
-    ],
+  // Wagmi hooks for contract interaction
+  const { data: hash, isPending, error, writeContract } = useWriteContract();
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
   });
 
   // Blockchain provider (using BSC RPC)
@@ -185,15 +177,38 @@ function App() {
     setStatus("loading");
     setErrorMessage("");
     try {
-      const tx = await writeContractAsync();;
-      await tx.wait();
-      setStatus("success");
-    } catch (error) {
+      writeContract({
+        address: FLASH_LOAN_ADDRESS,
+        abi: FLASH_LOAN_ABI,
+        functionName: "Execute_Arbitrage_Opportunity",
+        args: [
+          token.address,
+          toWei(amount, token.decimals),
+          tokenB.address,
+          poolBuy,
+          poolSell,
+        ],
+      });
+    } catch (err) {
       setStatus("error");
-      setErrorMessage(error.message || "Transaction failed.");
-      console.error("Arbitrage error:", error);
+      setErrorMessage(err.message || "Failed to initiate transaction.");
+      console.error("Transaction error:", err);
     }
   };
+
+  // Update status based on transaction states
+  useEffect(() => {
+    if (isPending) {
+      setStatus("loading");
+    } else if (isConfirming) {
+      setStatus("confirming");
+    } else if (isConfirmed) {
+      setStatus("success");
+    } else if (error) {
+      setStatus("error");
+      setErrorMessage(error.shortMessage || error.message || "Transaction failed.");
+    }
+  }, [isPending, isConfirming, isConfirmed, error]);
 
   // Render logic
   if (!isConnected) {
@@ -221,7 +236,7 @@ function App() {
       <h1>Flash Loan Arbitrage App</h1>
       <ConnectButton />
       <p>Connected Address: {address}</p>
-      <div className="form-container">
+      <form className="form-container" onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Borrowing Token:</label>
           <select
@@ -244,6 +259,7 @@ function App() {
             placeholder="Enter amount"
             step="0.01"
             min="0"
+            required
           />
         </div>
         <div className="form-group">
@@ -261,7 +277,7 @@ function App() {
         </div>
         <div className="form-group">
           <label>Buy Pool Address (Auto-detected):</label>
-          <input type="text" value={poolBuy} readOnly />
+          <input type="text" value={poolBuy} readOnly required />
           {buyPoolPrice && (
             <p>
               Price: {buyPoolPrice.toFixed(6)} {tokenB.symbol} per {token.symbol}
@@ -269,20 +285,30 @@ function App() {
           )}
         </div>
         <div className="form-group">
-          <label>Sell Pool Address (Auto-detected):</label>
-          <input type="text" value={poolSell} readOnly />
+          <label>Sell Pool Address (
+
+Auto-detected):</label>
+          <input type="text" value={poolSell} readOnly required />
           {sellPoolPrice && (
             <p>
               Price: {sellPoolPrice.toFixed(6)} {tokenB.symbol} per {token.symbol}
             </p>
           )}
         </div>
-        <button onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? "Processing..." : "Execute Arbitrage"}
+        <button type="submit" disabled={isPending || isConfirming}>
+          {isPending
+            ? "Confirming in Wallet..."
+            : isConfirming
+            ? "Waiting for Confirmation..."
+            : "Execute Arbitrage"}
         </button>
-      </div>
-      {isSuccess && <p className="success">Transaction successful!</p>}
-      {status === "error" && <p className="error">Error: {errorMessage}</p>}
+      </form>
+      {hash && <p className="info">Transaction Hash: {hash}</p>}
+      {isConfirming && <p className="info">Waiting for transaction confirmation...</p>}
+      {isConfirmed && <p className="success">Transaction confirmed successfully!</p>}
+      {(status === "error" || error) && (
+        <p className="error">Error: {errorMessage}</p>
+      )}
     </div>
   );
 }
