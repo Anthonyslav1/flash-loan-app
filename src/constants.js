@@ -72,6 +72,17 @@ export const SUPPORTED_ASSETS = [
   { address: "0x26c5e01524d2E6280A48F2c50fF6De7e52E9611C", symbol: "wstETH", decimals: 18 },
 ];
 
-// Utility to convert amount to smallest unit
-export const toWei = (amount, decimals) =>
-  ethers.formatUnits(amount.toString(), decimals);
+// Utility to convert amount to smallest unit (wei)
+export const toWei = (amount, decimals) => {
+  if (!amount || isNaN(parseFloat(amount))) {
+    throw new Error("Invalid amount: must be a valid number");
+  }
+  if (!Number.isInteger(decimals) || decimals < 0) {
+    throw new Error("Invalid decimals: must be a non-negative integer");
+  }
+  try {
+    return ethers.parseUnits(amount.toString(), decimals);
+  } catch (err) {
+    throw new Error(`Failed to convert amount to wei: ${err.message}`);
+  }
+};
